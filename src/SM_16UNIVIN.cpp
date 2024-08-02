@@ -7,12 +7,13 @@ extern "C"
 #include "Wire.h"
 #include "SM_16UNIVIN.h"
 
-SM_16_UNIVIN::SM_16_UNIVIN(uint8_t stack)
+SM_16_UNIVIN::SM_16_UNIVIN(uint8_t stack, TwoWire *wire)
 {
   if (stack > 7)
     stack = 7;
   _hwAdd = UI_SLAVE_OWN_ADDRESS_BASE + stack;
   _detected = false;
+  _wire = wire;
 }
 
 bool SM_16_UNIVIN::begin()
@@ -190,11 +191,11 @@ bool SM_16_UNIVIN::resetCounter(uint8_t channel)
 */
 int SM_16_UNIVIN::writeByte(uint8_t add, uint8_t value)
 {
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
-  Wire.write(value);
-  return Wire.endTransmission();
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
+  _wire->write(value);
+  return _wire->endTransmission();
 }
 
 int SM_16_UNIVIN::writeWord(uint8_t add, uint16_t value)
@@ -202,12 +203,12 @@ int SM_16_UNIVIN::writeWord(uint8_t add, uint16_t value)
   uint8_t buff[2];
 
   memcpy(buff, &value, 2);
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
-  Wire.write(buff[0]);
-  Wire.write(buff[1]);
-  return Wire.endTransmission();
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
+  _wire->write(buff[0]);
+  _wire->write(buff[1]);
+  return _wire->endTransmission();
 
 }
 int SM_16_UNIVIN::writeDWord(uint8_t add, uint32_t value)
@@ -216,14 +217,14 @@ int SM_16_UNIVIN::writeDWord(uint8_t add, uint32_t value)
   int i = 0;
 
   memcpy(buff, &value, 4);
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
   for (i = 0; i < 4; i++)
   {
-    Wire.write(buff[i]);
+    _wire->write(buff[i]);
   }
-  return Wire.endTransmission();
+  return _wire->endTransmission();
 
 }
 int SM_16_UNIVIN::readByte(uint8_t add, uint8_t* value)
@@ -232,17 +233,17 @@ int SM_16_UNIVIN::readByte(uint8_t add, uint8_t* value)
   {
     return -1;
   }
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
-  if (Wire.endTransmission() != 0)
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
+  if (_wire->endTransmission() != 0)
   {
     return -1;
   }
-  Wire.requestFrom(_hwAdd, (uint8_t)1);
-  if (1 <= Wire.available())
+  _wire->requestFrom(_hwAdd, (uint8_t)1);
+  if (1 <= _wire->available())
   {
-    *value = Wire.read();
+    *value = _wire->read();
   }
   else
   {
@@ -258,18 +259,18 @@ int SM_16_UNIVIN::readWord(uint8_t add, uint16_t* value)
   {
     return -1;
   }
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
-  if (Wire.endTransmission() != 0)
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
+  if (_wire->endTransmission() != 0)
   {
     return -1;
   }
-  Wire.requestFrom(_hwAdd, (uint8_t)2);
-  if (2 <= Wire.available())
+  _wire->requestFrom(_hwAdd, (uint8_t)2);
+  if (2 <= _wire->available())
   {
-    buff[0] = Wire.read();
-    buff[1] = Wire.read();
+    buff[0] = _wire->read();
+    buff[1] = _wire->read();
   }
   else
   {
@@ -288,19 +289,19 @@ int SM_16_UNIVIN::readDWord(uint8_t add, uint32_t* value)
   {
     return -1;
   }
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
-  if (Wire.endTransmission() != 0)
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
+  if (_wire->endTransmission() != 0)
   {
     return -1;
   }
-  Wire.requestFrom(_hwAdd, (uint8_t)4);
-  if (4 <= Wire.available())
+  _wire->requestFrom(_hwAdd, (uint8_t)4);
+  if (4 <= _wire->available())
   {
     for (i = 0; i < 4; i++)
     {
-      buff[i] = Wire.read();
+      buff[i] = _wire->read();
     }
   }
   else
@@ -320,19 +321,19 @@ int SM_16_UNIVIN::readSignedDWord(uint8_t add, int32_t* value)
   {
     return -1;
   }
-  Wire.begin();
-  Wire.beginTransmission(_hwAdd);
-  Wire.write(add);
-  if (Wire.endTransmission() != 0)
+  _wire->begin();
+  _wire->beginTransmission(_hwAdd);
+  _wire->write(add);
+  if (_wire->endTransmission() != 0)
   {
     return -1;
   }
-  Wire.requestFrom(_hwAdd, (uint8_t)4);
-  if (4 <= Wire.available())
+  _wire->requestFrom(_hwAdd, (uint8_t)4);
+  if (4 <= _wire->available())
   {
     for (i = 0; i < 4; i++)
     {
-      buff[i] = Wire.read();
+      buff[i] = _wire->read();
     }
   }
   else

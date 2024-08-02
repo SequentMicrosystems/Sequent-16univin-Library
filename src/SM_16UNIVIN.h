@@ -21,6 +21,7 @@
 
 #include "Arduino.h"
 #include <inttypes.h>
+#include "Wire.h"
 
 #define ERROR -1
 #define OK 0
@@ -115,8 +116,9 @@ public:
 	/*!
 	 * @brief Class constructor
 	 * @param stack - stack level setted from the dip-switches on the card
+	 * @param wire - which I2C interface you wish to use
 	 */
-	SM_16_UNIVIN(uint8_t stack = 0);
+	SM_16_UNIVIN(uint8_t stack = 0, TwoWire *wire = &Wire);
 
 	/*!
 	 * @brief Check card presence
@@ -204,6 +206,7 @@ public:
 private:
 	uint8_t _hwAdd;
 	bool _detected;
+	TwoWire *_wire;
 	int writeBuff(uint8_t add, uint8_t *buff, uint8_t size);
 	int readBuff(uint8_t add, uint8_t *buff, uint8_t size);
 	int writeByte(uint8_t add, uint8_t value);
